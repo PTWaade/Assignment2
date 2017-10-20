@@ -71,7 +71,7 @@ crqa1
 #Get a list of all the files
 Files = list.files("pitch/", ".txt")
 #Get a smaller list for experimentation
-Files_t = sample(Files, 5)
+Files_t = sample(Files, 50)
 
 #Make a list with the titles - later the values will be added here
 d_out = c("Subj", "Study", "Diagnosis", "Trial", "Mean", "Std", "Min", "Max", "Median", "IQR", "MeanAbDif", "CoefVar", "RR", "DET", "NRLINE", "maxL", "L", "ENTR", "LAM", "TT")
@@ -132,10 +132,17 @@ get_data = function(x) {
            return(results)
            }
 
+
+#start iteration count
+n = 1
 #Go through all files
-for (i in Files_t){
+for (i in Files){
   #Apply the function, and add it to the list with the titles
   d_out = rbind(d_out, try(get_data(i)))
+  
+  #Keep track of iterations
+  print(n)
+  n = n + 1
 }
 
 #Make the column names from the first row
