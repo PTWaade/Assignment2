@@ -135,13 +135,27 @@ get_data = function(x) {
 #Go through all files
 for (i in Files_t){
   #Apply the function, and add it to the list with the titles
-  d_out = rbind(d_out, get_data(i))
+  d_out = rbind(d_out, try(get_data(i)))
 }
 
+#Make the column names from the first row
+colnames(d_out) = d_out[1, ] 
+#Delete the now unnecessary first row
+d_out = d_out[-1, ]  
+#Make into a dataframe
+d_out = data.frame(d_out)
 
+#Remove the lines with errormessages
+d_out = d_out[!d_out$Subj==
+"Error in if (length(ts1) < embed * delay) { : argument har længden nul
+",]
 
-#Change Diagnosis 0 and 1 into control and Schizo
+#Rename diagnosis
+library(plyr)
+d_out$Diagnosis = revalue(d_out$Diagnosis, c("0" = "control", "1" = "schizo"))
+
 #Write the datafile to csv
+write.csv (d_out, file = "Pitch_Out_Data.csv")
 
 
 ```
