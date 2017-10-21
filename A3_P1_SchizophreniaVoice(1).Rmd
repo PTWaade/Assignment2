@@ -135,15 +135,17 @@ get_data = function(x) {
 
 #start iteration count
 n = 1
+
 #Go through all files
 for (i in Files){
-  #Apply the function, and add it to the list with the titles
-  d_out = rbind(d_out, try(get_data(i)))
+#Apply the function, and add it to the list with the titles
+d_out = rbind(d_out, try(get_data(i)))
   
   #Keep track of iterations
-  print(n)
-  n = n + 1
+print(n)
+n = n + 1
 }
+
 
 #Make the column names from the first row
 colnames(d_out) = d_out[1, ] 
@@ -152,18 +154,24 @@ d_out = d_out[-1, ]
 #Make into a dataframe
 d_out = data.frame(d_out)
 
-#Remove the lines with errormessages
-d_out = d_out[!d_out$Subj==
-"Error in if (length(ts1) < embed * delay) { : argument har længden nul
-",]
-
 #Rename diagnosis
 library(plyr)
 d_out$Diagnosis = revalue(d_out$Diagnosis, c("0" = "control", "1" = "schizo"))
 
+#Remove non-digit ID's -  the lines with errormessages
+d_out = subset(d_out, grepl('^\\d+$', d_out$Subj))
+
+#Combine ID's with Diagnosis to make unique ID's
+d_out$Subj = paste(d_out$Subj, d_out$Diagnosis, sep="")
+
 #Write the datafile to csv
 write.csv (d_out, file = "Pitch_Out_Data.csv")
 
+
+   #### Read file for trying out
+#d_out = read.csv("Pitch_Out_Data.csv")
+   #Just switch back to the proper name for the first column
+#names(d_out)[names(d_out)=="X"] <- "Subj"
 
 ```
 
