@@ -30,9 +30,7 @@ N.B. There are looots of files to be dealt with. Probably too many for your comp
 ```{r}
 library(crqa)
 
-#Read files
-d_demo = read.table("DemoData.txt", header = T)
-d_art = read.table("Articulation.txt", header = T, sep = ",")
+#Read first file
 d1 = read.table("pitch/Study1D0S105T1_f0.txt", header = T)
 
 #Notes:
@@ -154,24 +152,66 @@ d_out = d_out[-1, ]
 #Make into a dataframe
 d_out = data.frame(d_out)
 
+
 #Rename diagnosis
 library(plyr)
 d_out$Diagnosis = revalue(d_out$Diagnosis, c("0" = "control", "1" = "schizo"))
+```
+
+```{r}
+###### MAKE IT INTO THE DATAFRAME
+
+#Read for further work
+d_out = read.csv("Pitch_Out_Data-backupbackup.csv")
+d_out$X = NULL
 
 #Remove non-digit ID's -  the lines with errormessages
 d_out = subset(d_out, grepl('^\\d+$', d_out$Subj))
 
+
+
+
 #Combine ID's with Diagnosis to make unique ID's
 d_out$Subj = paste(d_out$Subj, d_out$Diagnosis, sep="")
 
+
+#Change types
+#Make into character
+d_out$Diagnosis = as.character(d_out$Diagnosis)
+#Make all factors into numerical
+d_out[] <- lapply(d_out, function(x) {
+    if(is.factor(x)) as.numeric(as.character(x)) else x
+})
+#Make into factor again
+d_out$Subj = as.factor(d_out$Subj)
+d_out$Diagnosis = as.factor(d_out$Diagnosis)
+
+
+
+#### Combine with demographics data
+
+#Read
+d_demo = read.table("DemoData.txt", header = T)
+
+#Rename for merging purposes: Diagnosis
+library(plyr)
+d_demo$Diagnosis = revalue(d_demo$Diagnosis, c("Control" = "control", "Schizophrenia" = "schizo"))
+
+#Rename Subject to Subj
+colnames(d_demo)[2] <- "Subj"
+
+#Combine ID's with Diagnosis to make unique ID's
+d_demo$Subj = paste(d_demo$Subj, d_demo$Diagnosis, sep="")
+#Make into factor
+d_demo$Subj = as.factor(d_demo$Subj)
+
+#And combine
+d_full = merge(d_out, d_demo)
+
+
 #Write the datafile to csv
-write.csv (d_out, file = "Pitch_Out_Data.csv")
+write.csv (d_full, file = "Pitch_Out_Data.csv")
 
-
-   #### Read file for trying out
-#d_out = read.csv("Pitch_Out_Data.csv")
-   #Just switch back to the proper name for the first column
-#names(d_out)[names(d_out)=="X"] <- "Subj"
 
 ```
 
@@ -191,6 +231,19 @@ write.csv (d_out, file = "Pitch_Out_Data.csv")
 
 ## N.B. Remember to save the acoustic features of voice in a separate file, so to be able to load them next time
 
+
+```{r}
+
+
+
+#############
+library(lme4)
+library(lmerTest)
+
+#Make models for acoustic features:
+model = lmer(mean ~ Diagnosis + (1|Subj), d_full)
+
+```
 
 
 
