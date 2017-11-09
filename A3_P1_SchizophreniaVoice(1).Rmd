@@ -67,6 +67,10 @@ crqa1
 
 
 ```{r}
+library(crqa)
+library(stringr)
+library(tidyverse)
+
 ####### PREPERATION
 #Get a list of all the files
 Files = list.files("pitch/", ".txt")
@@ -87,7 +91,7 @@ par = list(lgM =  50, steps = seq(1, 6, 1),  radiusspan = 100,  radiussample = 4
 #NOTE: I use the normal, most conservative settings for parameter optimization
 
 #Optimize for each file
-for (i in Files_t){
+for (i in Files){
   #Put the path together with the filename
   dest = paste("pitch/", i, sep="")
   #Read it
@@ -148,7 +152,7 @@ n = 1
 
 
 
-for (i in Files_t){
+for (i in Files){
   ###Read file
   #Put the path together with the filename
   dest = paste("pitch/", i, sep="")
@@ -175,10 +179,10 @@ for (i in Files_t){
   P_CovofVar[n] = sd(d_t$f0) / mean(d_t$f0)
   
   #Do CRQA analysis
-    crqa_t = crqa (d_t, d_t, delay=DELAY, embed=EMBED, radius=RADIUS, normalize=0, rescale=0, mindiagline = 2, minvertline = 2) 
+    crqa_t = try(crqa (d_t, d_t, delay=DELAY, embed=EMBED, radius=RADIUS, normalize=0, rescale=0, mindiagline = 2, minvertline = 2)) 
   
   
-  if (is.na(Delay[n])){
+  if (is.na(Delay[n]) | length(crqa_t) < 2 ){
     P_RR[n] = NA
     P_DET[n] = NA
     P_NRLINE[n] = NA
@@ -213,39 +217,18 @@ d_out = as.data.frame(d_out)
 library(plyr)
 d_out$Diagnosis = revalue(d_out$Diagnosis, c("0" = "Control", "1" = "Schizophrenia"))
 
-
-
-as.numeric(levels(d_out$P_L))[d_out$P_L]
-
-d_out[4:11] <- lapply(d_out[4:19], as.character) %>%
+#Make all numbers into numeric
+d_out[4:19] <- lapply(d_out[4:19], as.character) %>%
   lapply(as.numeric)
 
 
 
-
-
-
-#Read for further work
-d_out = read.csv("Pitch_Out_Data-backupbackup.csv")
-#Change types
-#Make into character
-d_out$Diagnosis = as.character(d_out$Diagnosis)
-#Make all factors into numerical
-d_out[] <- lapply(d_out, function(x) {
-    if(is.factor(x)) as.numeric(as.character(x)) else x
-})
-#Make into factor again
-d_out$Subj = as.factor(d_out$Subj)
-d_out$Diagnosis = as.factor(d_out$Diagnosis)
-
-
-
-#### Combine with demographics data
+####### Combine with demographics data
 #Read
 d_demo = read.table("DemoData.txt", header = T)
 
 #Make into factor
-d_demo$Subj = as.factor(d_demo$Subj)
+d_demo$Subject = as.factor(d_demo$Subject)
 
 #And combine
 d_full = merge(d_out, d_demo)
@@ -253,6 +236,7 @@ d_full = merge(d_out, d_demo)
 
 #Write the datafile to csv
 write.csv (d_full, file = "Pitch_Out_Data.csv")
+
 ```
 
 
@@ -280,14 +264,15 @@ I choose the parameters Delay, Embed and Radius optimized for each of the time s
 
 ```{r}
 
-
+#Read for further work
+d_2 = read.csv("Pitch_Out_Data.csv")
 
 #############
 library(lme4)
 library(lmerTest)
 
 #Make models for acoustic features:
-model = lmer(mean ~ Diagnosis + (1|Subj), d_full)
+model = lmer(mean ~ Diagnosis + (1|Subj), d_2)
 
 ```
 
