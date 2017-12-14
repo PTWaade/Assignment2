@@ -244,6 +244,49 @@ write.csv (d_full, file = "Pitch_Out_Data.csv")
 - Bonus points: cross-validate the model and report the betas and standard errors from all rounds to get an idea of how robust the estimates are. 
 3a. Is study a significant predictor in these models? What should you infer from this? Does study interact with diagnosis? What should you infer from this?
 
+
+```{r}
+
+#Read for further work
+d_2 = read.csv("Pitch_Out_Data.csv")
+
+#############
+library(lme4)
+library(lmerTest)
+
+#Make models for acoustic features:
+
+Feature_list = c("P_Mean ~ Diagnosis + Trial + (1+Diagnosis|Subject)",
+                 "P_SD ~ Diagnosis + Trial + (1+Diagnosis|Subject)",
+                 "P_Range ~ Diagnosis + Trial + (1+Diagnosis|Subject)",
+                 "P_Median ~ Diagnosis + Trial + (1+Diagnosis|Subject)",
+                 "P_IQR ~ Diagnosis + Trial + (1+Diagnosis|Subject)",
+                 "P_MeanAbDif ~ Diagnosis + Trial + (1+Diagnosis|Subject)",
+                 "P_CovofVar ~ Diagnosis + Trial + (1+Diagnosis|Subject)",
+                 "P_RR ~ Diagnosis + Trial + (1+Diagnosis|Subject)",
+                 "P_DET ~ Diagnosis + Trial + (1+Diagnosis|Subject)",
+                 "P_NRLINE ~ Diagnosis + Trial + (1+Diagnosis|Subject)",
+                 "P_maxL ~ Diagnosis + Trial + (1+Diagnosis|Subject)",
+                 "P_L ~ Diagnosis + Trial + (1+Diagnosis|Subject)",
+                 "P_ENTR ~ Diagnosis + Trial + (1+Diagnosis|Subject)",
+                 "P_LAM ~ Diagnosis + Trial + (1+Diagnosis|Subject)",
+                 "P_TT ~ Diagnosis + Trial + (1+Diagnosis|Subject)"
+)
+
+for (i in Feature_list){
+  mx = lmer (i, d_2)
+  print(summary(mx))
+}   
+
+
+
+
+
+
+```
+
+
+
 4. Bonus Question: Compare effect size of diagnosis across the different measures. Which measure seems most sensitive?
 - Tip: to compare across measures you need to put all of them on the same scale, that is, you need to "standardize" them (z-score)
 
@@ -261,18 +304,6 @@ I choose the parameters Delay, Embed and Radius optimized for each of the time s
 
 ## N.B. Remember to save the acoustic features of voice in a separate file, so to be able to load them next time
 
-
-```{r}
-
-#Read for further work
-d_2 = read.csv("Pitch_Out_Data.csv")
-
-#############
-library(lme4)
-library(lmerTest)
-
-#Make models for acoustic features:
-model = lmer(mean ~ Diagnosis + (1|Subj), d_2)
 
 ```
 
